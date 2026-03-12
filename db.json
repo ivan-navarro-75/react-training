@@ -1,0 +1,35 @@
+{
+  "trip": {
+    "name": "Team Offsite",
+    "destination": "London, UK",
+    "budget": 2500,
+    "currency": "GBP",
+    "isFavourite": false,
+    "expenses": [
+      {
+        "id": 1,
+        "merchant": "British Airways",
+        "amount": 850,
+        "category": "Travel",
+        "status": "pending",
+        "approvedAt": null
+      },
+      {
+        "id": 2,
+        "merchant": "The Hoxton",
+        "amount": 420,
+        "category": "Lodging",
+        "status": "pending",
+        "approvedAt": null
+      },
+      {
+        "id": 3,
+        "merchant": "Uber",
+        "amount": 35,
+        "category": "Transport",
+        "status": "pending",
+        "approvedAt": null
+      }
+    ]
+  }
+}

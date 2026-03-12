@@ -1,0 +1,48 @@
+.searchContainer {
+  box-sizing: border-box;
+  padding: 0 32px;
+}
+
+.searchCard {
+  box-sizing: border-box;
+  padding: 16px;
+  background-color: #fafaf6;
+  border-radius: 8px;
+}
+
+.searchForm {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.searchInput {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #d0d0d0;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.buttonsContainer {
+  display: flex;
+  gap: 8px;
+
+  & button {
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid #919183;
+
+    &:hover,
+    &:focus-visible {
+      background-color: #e0e0e0;
+    }
+
+    &[data-active="true"] {
+      background-color: #646cff;
+      color: white;
+      border-color: #646cff;
+    }
+  }
+}
