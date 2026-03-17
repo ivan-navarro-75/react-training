@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useSuspenseQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ExpensesList } from "./ExpensesList";
 import { TripInformation } from "./TripInformation";
 import styles from "./Home.module.css";
@@ -23,11 +23,7 @@ function getInitialStatusFilter(): StatusFilter {
 
 export function Home() {
   const queryClient = useQueryClient();
-  const {
-    data: trip,
-    isLoading,
-    isError,
-  } = useQuery({
+  const { data: trip } = useSuspenseQuery({
     queryKey: TRIP_QUERY_KEY,
     queryFn: getTrip,
   });
@@ -63,14 +59,6 @@ export function Home() {
 
   const approveAll = () => approveAllMutation.mutate();
   const unapproveAll = () => unapproveAllMutation.mutate();
-
-  if (isLoading) {
-    return <div className={styles.loading}>Loading...</div>;
-  }
-
-  if (isError || !trip) {
-    return <div>Something went wrong.</div>;
-  }
 
   const isFavourite = isFavouriteOverride ?? trip.isFavourite ?? false;
   const expensesNotInDraftStatus = trip.expenses
