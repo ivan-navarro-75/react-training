@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
-import { type Trip } from "./data";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ExpensesList } from "./ExpensesList";
 import { TripInformation } from "./TripInformation";
 import styles from "./Home.module.css";
 import { SearchContainer } from "./SearchContainer";
 import { approveAllExpenses, unapproveAllExpenses, getTrip } from "./api";
+
+const TRIP_QUERY_KEY = ["trip"] as const;
 
 type StatusFilter = "all" | "approved" | "pending";
 
@@ -20,7 +22,28 @@ function getInitialStatusFilter(): StatusFilter {
 }
 
 export function Home() {
-  const [trip, setTrip] = useState<Trip | null>(null);
+  const queryClient = useQueryClient();
+  const {
+    data: trip,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: TRIP_QUERY_KEY,
+    queryFn: getTrip,
+  });
+  const approveAllMutation = useMutation({
+    mutationFn: approveAllExpenses,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: TRIP_QUERY_KEY });
+    },
+  });
+  const unapproveAllMutation = useMutation({
+    mutationFn: unapproveAllExpenses,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: TRIP_QUERY_KEY });
+    },
+  });
+
   const [searchQuery, setSearchQuery] = useState("");
   const [isFavouriteOverride, setIsFavouriteOverride] = useState<
     boolean | undefined
@@ -29,22 +52,6 @@ export function Home() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>(
     getInitialStatusFilter,
   );
-  const [isLoading, setIsLoading] = useState(true);
-  const [isApprovingAll, setIsApprovingAll] = useState(false);
-  const [isUnapprovingAll, setIsUnapprovingAll] = useState(false);
-
-  useEffect(() => {
-    const loadTrip = async () => {
-      try {
-        const data = await getTrip();
-        setTrip(data);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadTrip();
-  }, []);
 
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
@@ -54,31 +61,14 @@ export function Home() {
     window.history.replaceState(null, "", nextUrl);
   }, [statusFilter]);
 
-  const approveAll = async () => {
-    try {
-      setIsApprovingAll(true);
-      const updatedTrip = await approveAllExpenses();
-      setTrip(updatedTrip);
-    } finally {
-      setIsApprovingAll(false);
-    }
-  };
-
-  const unapproveAll = async () => {
-    try {
-      setIsUnapprovingAll(true);
-      const updatedTrip = await unapproveAllExpenses();
-      setTrip(updatedTrip);
-    } finally {
-      setIsUnapprovingAll(false);
-    }
-  };
+  const approveAll = () => approveAllMutation.mutate();
+  const unapproveAll = () => unapproveAllMutation.mutate();
 
   if (isLoading) {
     return <div className={styles.loading}>Loading...</div>;
   }
 
-  if (!trip) {
+  if (isError || !trip) {
     return <div>Something went wrong.</div>;
   }
 
@@ -114,11 +104,21 @@ export function Home() {
         <button onClick={() => setShowFilters((prev) => !prev)}>
           {showFilters ? "Hide Filters 🫣" : "Show Filters 🔎"}
         </button>
-        <button disabled={isApprovingAll} onClick={() => void approveAll()}>
-          {isApprovingAll ? "Approving..." : "Approve all expenses"}
+        <button
+          disabled={approveAllMutation.isPending}
+          onClick={() => void approveAll()}
+        >
+          {approveAllMutation.isPending
+            ? "Approving..."
+            : "Approve all expenses"}
         </button>
-        <button disabled={isUnapprovingAll} onClick={() => void unapproveAll()}>
-          {isUnapprovingAll ? "Unapproving..." : "Unapprove all expenses"}
+        <button
+          disabled={unapproveAllMutation.isPending}
+          onClick={() => void unapproveAll()}
+        >
+          {unapproveAllMutation.isPending
+            ? "Unapproving..."
+            : "Unapprove all expenses"}
         </button>
       </div>
       {showFilters ? (
